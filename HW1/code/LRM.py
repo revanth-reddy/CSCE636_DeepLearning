@@ -34,6 +34,61 @@ class logistic_regression_multiclass(object):
         """
 
 		### YOUR CODE HERE
+        import pandas as pd
+
+        n_samples, n_features = X.shape
+        y = pd.get_dummies(labels).values
+
+        self.W = np.zeros((n_features, self.k))
+
+        for _ in range(self.max_iter):
+            for i in range(0, n_samples//batch_size):
+                grad = 0
+                for j in range(i * batch_size, (i+1) * batch_size):
+                    if j >= n_samples:
+                        break
+                    grad += self._gradient(X[j],y[j])
+
+                grad = grad/batch_size
+                # print("LRM gradients:",grad)
+                self.W -= self.learning_rate * grad
+
+		### END YOUR CODE
+
+    def fit_BGD_Convergence(self, X, labels, batch_size):
+        """Train perceptron model on data (X,y) with BGD untill convergence.
+
+        Args:
+            X: An array of shape [n_samples, n_features].
+            labels: An array of shape [n_samples,].  Only contains 0,..,k-1.
+            batch_size: An integer.
+
+        Returns:
+            self: Returns an instance of self.
+
+        Hint: the labels should be converted to one-hot vectors, for example: 1----> [0,1,0]; 2---->[0,0,1].
+        """
+
+		### YOUR CODE HERE
+        import pandas as pd
+
+        n_samples, n_features = X.shape
+        y = pd.get_dummies(labels).values
+
+        self.W = np.zeros((n_features, self.k))
+
+        for _ in range(self.max_iter):
+            for i in range(0, n_samples//batch_size):
+                grad = 0
+                for j in range(i * batch_size, (i+1) * batch_size):
+                    if j >= n_samples:
+                        break
+                    grad += self._gradient(X[j],y[j])
+
+                grad = grad/batch_size
+                if np.linalg.norm(grad*1./batch_size) < 0.0005:
+                    return
+                self.W -= self.learning_rate * grad
 
 		### END YOUR CODE
 
@@ -51,7 +106,9 @@ class logistic_regression_multiclass(object):
                 cross-entropy with respect to self.W.
         """
 		### YOUR CODE HERE
-
+        h = self.softmax(np.dot(_x, self.W))
+        grad = _x.reshape(-1,1) * (h - _y).reshape(1,-1)
+        return grad
 		### END YOUR CODE
 
     def softmax(self, x):
@@ -59,7 +116,9 @@ class logistic_regression_multiclass(object):
         ### You must implement softmax by youself, otherwise you will not get credits for this part.
 
 		### YOUR CODE HERE
-
+        x = x - np.max(x)
+        x_softmax = (np.exp(x) / np.sum(np.exp(x))).T
+        return x_softmax
 		### END YOUR CODE
 
     def get_params(self):
@@ -84,7 +143,9 @@ class logistic_regression_multiclass(object):
             preds: An array of shape [n_samples,]. Only contains 0,..,k-1.
         """
 		### YOUR CODE HERE
-
+        pred_one_hot = np.dot(X,self.W)
+        pred = np.argmax(pred_one_hot,axis=1)
+        return pred
 		### END YOUR CODE
 
 
@@ -99,6 +160,8 @@ class logistic_regression_multiclass(object):
             score: An float. Mean accuracy of self.predict(X) wrt. labels.
         """
 		### YOUR CODE HERE
-
+        pred_y = self.predict(X)
+        acc = sum(pred_y == labels) / labels.shape[0]
+        return acc
 		### END YOUR CODE
 
